@@ -16,7 +16,7 @@ module FinalRedirectUrl
         @final_url = url_string_from_uri(response_uri)
       rescue Exception => ex
         logger = Logger.new(STDOUT)
-        logger.error(ex.message)
+        logger.error("URL: #{@final_url} Message: #{ex.message}")
       end
     end
 
