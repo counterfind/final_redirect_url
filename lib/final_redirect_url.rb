@@ -36,7 +36,7 @@ module FinalRedirectUrl
     http = Net::HTTP.new(uri.host, uri.port)
     http.read_timeout = timeout
     http.open_timeout = timeout
-    http.use_ssl = true
+    http.use_ssl = (uri.scheme == "https")
     response = http.start do |http|
       http.get(uri.path)
     end
