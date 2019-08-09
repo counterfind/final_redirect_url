@@ -5,7 +5,7 @@ require 'logger'
 module FinalRedirectUrl
 
   def self.final_redirect_url(url, options={})
-    final_url = ''
+    final_url = url
     if is_valid_url?(url)
       begin
         redirect_lookup_depth = options[:depth].to_i > 0 ? options[:depth].to_i : 5
@@ -29,7 +29,12 @@ module FinalRedirectUrl
     return url if limit <= 0
 
     uri = URI.parse(url)
-    response = ::Net::HTTP.get_response(uri)
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.read_timeout = 3
+    http.open_timeout = 3
+    response = http.start do |http|
+      http.get(uri.path)
+    end
     return uri if response.class == Net::HTTPOK
 
     redirect_location = response['location']
