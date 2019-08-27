@@ -38,7 +38,7 @@ module FinalRedirectUrl
     http.open_timeout = timeout
     http.use_ssl = (uri.scheme == "https")
     response = http.start do |http|
-      http.get(uri.path)
+      http.get(uri.request_uri)
     end
     return uri if response.class == Net::HTTPOK
 
