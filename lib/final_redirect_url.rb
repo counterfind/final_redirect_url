@@ -10,7 +10,7 @@ module FinalRedirectUrl
     if valid_url?(url)
       begin
         redirect_lookup_depth = options[:depth].to_i.positive? ? options[:depth].to_i : 5
-        timeout = options[:timeout].to_i.positive? ? options[:timeout].to_i : 3
+        timeout = options[:timeout].to_i.positive? ? options[:timeout].to_i : 5
 
         response_uri = get_final_redirect_url(url, redirect_lookup_depth, timeout)
         @final_url = url_string_from_uri(response_uri)
@@ -29,10 +29,11 @@ module FinalRedirectUrl
     url.to_s =~ /\A#{URI.regexp(%w[http https])}\z/
   end
 
-  def self.get_final_redirect_url(url, limit = 5, timeout = 3)
-    return url if limit <= 0
-
+  def self.get_final_redirect_url(url, limit = 5, timeout = 5)
     uri = URI.parse(url)
+
+    return uri if limit <= 0
+
     http = Net::HTTP.new(uri.host, uri.port)
     http.read_timeout = timeout
     http.open_timeout = timeout
