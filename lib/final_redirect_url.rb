@@ -1,8 +1,14 @@
 require 'final_redirect_url/version'
 require 'net/http'
 require 'logger'
+require 'nokogiri'
+require 'pry'
+
+# FinalRedirectUrl.final_redirect_url "http://smarturl.it/FinesseMerch"
 
 module FinalRedirectUrl
+
+  KNOWN_SHORTENERS = %w[bit.ly smarturl.it goog.gl tinyurl.com ow.ly rebrand.ly adf.ly bit.do su.pr is.gd soo.gd budurl.com clicky.me]
 
   def self.final_redirect_url(url, options = {})
     @final_url = url
@@ -41,9 +47,17 @@ module FinalRedirectUrl
     response = http.start do |http|
       http.get(uri.request_uri)
     end
-    return uri if response.class == Net::HTTPOK
 
-    redirect_location = response['location']
+    return uri if response.class == Net::HTTPOK && !KNOWN_SHORTENERS.include?(uri.host)
+
+    if response.class == Net::HTTPOK # Probably returned 200 because it's going to perform a redirection using JS
+      doc = Nokogiri::HTML.parse(response.body)
+      meta_refresh = doc.at_xpath("//meta[@http-equiv='refresh']/@content")
+      redirect_location = meta_refresh&.value&.split('url=')&.last
+    else
+      redirect_location = response['location']
+    end
+
     return uri unless redirect_location
 
     location_uri = URI.parse(redirect_location)
